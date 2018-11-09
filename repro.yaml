@@ -5,7 +5,7 @@ Resources:
   Policy:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: !Sub '${AWS::StackName}-afro-policy'
+      PolicyName: !Sub '${AWS::StackName}-afro-named-policy'
       Roles:
       - !Ref Role
       PolicyDocument:
