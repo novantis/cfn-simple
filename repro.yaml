@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Repro for case 5508726811
+Description: Policy creation sample template
 
 Resources:
   Policy:
