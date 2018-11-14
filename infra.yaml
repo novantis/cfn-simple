@@ -1,0 +1,64 @@
+Resources:
+  ArtifactStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+  
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Location: !Ref ArtifactStoreBucket
+        Type: S3
+      DisableInboundStageTransitions: []
+      Name: github-test
+      RoleArn: arn:aws:iam::460449571267:role/service-role/AWSCodePipelineServiceRole-us-east-1-codepipeline
+      Stages:
+      - Name: Source  
+        Actions:
+        - Name: Source
+          ActionTypeId:
+            Category: Source
+            Owner: ThirdParty
+            Version: '1'
+            Provider: GitHub
+          OutputArtifacts:
+          - Name: GHSource
+          Configuration:
+            Owner: novantis
+            Repo: cfn-simple
+            PollForSourceChanges: false
+            Branch: master
+            OAuthToken: '9728463071623b2f72c6567f367fc90bd8ca995e'
+      - Name: Deploy
+        Actions:
+        - Name: Deploy
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: '1'
+          InputArtifacts:
+          - Name: GHSource
+          Configuration:
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_NAMED_IAM
+            RoleArn: arn:aws:iam::460449571267:role/codepipeline
+            StackName: case
+            TemplatePath: "GHSource::repro.yaml"
+          RunOrder: 1
+  
+  Webhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: "123456789009382474743" 
+      Filters:
+      - JsonPath: '$.ref'
+        MatchEquals: 'refs/heads/{Branch}'
+      TargetAction: Source
+      TargetPipeline: github-test
+      TargetPipelineVersion: 1 
+      RegisterWithThirdParty: true
