@@ -1,3 +1,15 @@
+Parameters:
+  GitHubToken:
+    Type: String
+    Description: >-
+      GitHub personal token, needs to have repo and admin:repo_hook
+  
+  SecretToken:
+    Type: String
+    Description: >-
+      Token to authenticate webhook invoked by GitHub
+    Default: 49884ae0b2b0dfc8cdd5c8f87c2cd71ffa130e49
+
 Resources:
   ArtifactStoreBucket:
     Type: AWS::S3::Bucket
@@ -9,7 +21,6 @@ Resources:
         Location: !Ref ArtifactStoreBucket
         Type: S3
       DisableInboundStageTransitions: []
-      Name: github-test
       RoleArn: arn:aws:iam::460449571267:role/service-role/AWSCodePipelineServiceRole-us-east-1-codepipeline
       Stages:
       - Name: Source  
@@ -27,7 +38,7 @@ Resources:
             Repo: cfn-simple
             PollForSourceChanges: false
             Branch: master
-            OAuthToken: '9728463071623b2f72c6567f367fc90bd8ca995e'
+            OAuthToken: !Ref GitHubToken 
       - Name: Deploy
         Actions:
         - Name: Deploy
@@ -54,11 +65,11 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: "123456789009382474743" 
+        SecretToken: !Ref SecretToken 
       Filters:
       - JsonPath: '$.ref'
         MatchEquals: 'refs/heads/{Branch}'
       TargetAction: Source
-      TargetPipeline: github-test
-      TargetPipelineVersion: 1 
+      TargetPipeline: !Ref Pipeline
+      TargetPipelineVersion: !GetAtt Pipeline.Version
       RegisterWithThirdParty: true
