@@ -68,7 +68,7 @@ Resources:
         SecretToken: !Ref SecretToken 
       Filters:
       - JsonPath: '$.ref'
-        MatchEquals: 'refs/heads/{Branch}'
+        MatchEquals: 'refs/tags/v1.0.0'
       TargetAction: Source
       TargetPipeline: !Ref Pipeline
       TargetPipelineVersion: !GetAtt Pipeline.Version
