@@ -1,9 +1,6 @@
 Resources:
   ArtifactStoreBucket:
     Type: AWS::S3::Bucket
-    Properties:
-      VersioningConfiguration:
-        Status: Enabled
   
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -51,6 +48,9 @@ Resources:
   
   Webhook:
     Type: AWS::CodePipeline::Webhook
+    DependsOn:
+    - ArtifactStoreBucket
+    - Pipeline
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
