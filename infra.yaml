@@ -33,13 +33,44 @@ Resources:
             Version: '1'
             Provider: GitHub
           OutputArtifacts:
-          - Name: GHSource
+          - Name: GHSource1
           Configuration:
             Owner: novantis
             Repo: cfn-simple
             PollForSourceChanges: false
             Branch: master
             OAuthToken: !Ref GitHubToken 
+        - Name: Additional
+          ActionTypeId:
+            Category: Source
+            Owner: ThirdParty
+            Version: '1'
+            Provider: GitHub
+          OutputArtifacts:
+          - Name: GHSource2
+          Configuration:
+            Owner: rimaulana
+            Repo: simple-express
+            PollForSourceChanges: false
+            Branch: master
+            OAuthToken: !Ref GitHubToken 
+      - Name: Merge
+        Actions:
+        - Name: "my-app-merged"
+          InputArtifacts: 
+          - Name: GHSource1
+          - Name: GHSource2
+          ActionTypeId:
+            Category: Invoke
+            Owner: AWS
+            Provider: Lambda
+            Version: '1'
+          Configuration:
+            FunctionName: merge-CodePipelineArtifactMergeFunction-1ERK4ABJQNJJE
+            UserParameters: |
+              {"subfolder": true}
+          OutputArtifacts: 
+          - Name: GHSource
       - Name: Deploy
         Actions:
         - Name: Deploy
@@ -55,14 +86,11 @@ Resources:
             Capabilities: CAPABILITY_NAMED_IAM
             RoleArn: arn:aws:iam::460449571267:role/codepipeline
             StackName: case
-            TemplatePath: "GHSource::repro.yaml"
+            TemplatePath: "GHSource::GHSource1::repro.yaml"
           RunOrder: 1
   
   Webhook:
     Type: AWS::CodePipeline::Webhook
-    DependsOn:
-    - ArtifactStoreBucket
-    - Pipeline
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
